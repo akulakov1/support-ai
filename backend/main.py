@@ -4,8 +4,12 @@ from ai import ask_ai, clear_history
 
 app = FastAPI()
 
+class ClearRequest(BaseModel):
+    session_id: str
+
 class Message(BaseModel):
     message: str
+    session_id: str
     age: int | None = None
     region: str | None = None
     city: str | None = None
@@ -23,6 +27,7 @@ def root():
 def chat(data: Message):
     answer = ask_ai(
         data.message,
+        data.session_id,
         data.age,
         data.region,
         data.city
@@ -46,9 +51,6 @@ def prepare(data: PrepareRequest):
     Не добавляй факты, которых пользователь не сообщал.
     """
 @app.post("/api/clear")
-def clear():
-    clear_history()
-
-    return {
-        "status": "Chat cleared"
-    }
+def clear(data: ClearRequest):
+    clear_history(data.session_id)
+    return {"status": "Chat cleared"}

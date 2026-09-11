@@ -20,7 +20,7 @@ def load_prompt(filename: str) -> str:
     with open(path, "r", encoding="utf-8") as file:
         return file.read()
 
-chat_history = []
+chat_histories = {}
 MODEL = os.getenv(
     "OPENROUTER_MODEL",
     "openai/gpt-5.6-luna"
@@ -32,10 +32,16 @@ PREPARE_PROMPT = load_prompt("prepare_prompt.txt")
 
 def ask_ai(
     message: str,
+    session_id: str,
     age=None,
     region=None,
     city=None
 ) -> str:
+
+    if session_id not in chat_histories:
+        chat_histories[session_id] = []
+
+    history = chat_histories[session_id]
 
     context = f"""
 Возраст: {age}
@@ -43,7 +49,7 @@ def ask_ai(
 Город: {city}
 """
 
-    chat_history.append({
+    history.append({
         "role": "user",
         "content": message
     })
@@ -55,17 +61,17 @@ def ask_ai(
                 "role": "system",
                 "content": CHAT_PROMPT + context
             }
-        ] + chat_history
+        ] + history
     )
 
     answer = response.choices[0].message.content or ""
 
-    chat_history.append({
+    history.append({
         "role": "assistant",
         "content": answer
     })
 
     return answer
 
-def clear_history():
-    chat_history.clear()
+def clear_history(session_id: str):
+    chat_histories[session_id] = []
