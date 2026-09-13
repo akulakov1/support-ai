@@ -30,13 +30,7 @@ CHAT_PROMPT = load_prompt("chat_prompt.txt")
 PREPARE_PROMPT = load_prompt("prepare_prompt.txt")
 
 
-def ask_ai(
-    message: str,
-    session_id: str,
-    age=None,
-    region=None,
-    city=None
-) -> str:
+def ask_ai(message: str, session_id: str, age=None, region=None, city=None) -> str:
 
     if session_id not in chat_histories:
         chat_histories[session_id] = []

@@ -3,7 +3,18 @@ from pydantic import BaseModel
 from ai import ask_ai, clear_history, chat_histories
 from safety import check_safety
 from database import get_contacts
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI()
+
+frontend_folder = Path(__file__).parent.parent / "frontend"
+
+app.mount(
+    "/site",
+    StaticFiles(directory=frontend_folder),
+    name="site"
+)
 
 class ClearRequest(BaseModel):
     session_id: str
@@ -26,20 +37,28 @@ def root():
 
 @app.post("/api/chat")
 def chat(data: Message):
+    safety_level = check_safety(data.message)
 
-    safety = check_safety(data.message)
+    found_contacts = []
 
-    answer = ask_ai(
-        data.message,
-        data.session_id,
-        data.age,
-        data.region,
-        data.city
+    if data.region:
+        found_contacts = get_contacts(
+            city=data.city or "",
+            region=data.region
+        )
+
+    reply = ask_ai(
+        message=data.message,
+        session_id=data.session_id,
+        age=data.age,
+        region=data.region,
+        city=data.city
     )
 
     return {
-        "reply": answer,
-        "safety": safety
+        "reply":reply,
+        "safety": safety_level,
+        "contacts": found_contacts
     }
 
 # @app.post("/api/prepare")
