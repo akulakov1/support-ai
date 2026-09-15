@@ -51,11 +51,15 @@ def ask_ai(message: str, session_id: str, age=None, region=None, city=None) -> s
     response = client.chat.completions.create(
         model=MODEL,
         messages=[
-            {
-                "role": "system",
-                "content": CHAT_PROMPT + context
-            }
-        ] + history
+             {
+                 "role": "system",
+                 "content": CHAT_PROMPT
+             },
+             {
+                 "role": "user",
+                 "content": "Анкетные данные пользователя:\n" + context
+             }
+         ] + history
     )
 
     answer = response.choices[0].message.content or ""
